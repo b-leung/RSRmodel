@@ -1,7 +1,7 @@
 # RSRmodel
-#Relative Suitability Richness Model
-#requires mgcv library
-#sample code to run model. 
+Relative Suitability Richness Model
+requires mgcv library
+sample code to run model. 
 
 
 library(pROC)
@@ -13,8 +13,8 @@ fit_dat=read.csv('test_fit.csv') # fitting data set
 predict_dat=read.csv('test_pred.csv') #prediction data set
 protocolB=T #do protocolB (protocol A always done)
 mem_nis=predict_dat[,nis]
-#setting all nis to NA, so that RSR fills in values, for validation. Otherwise, uses real information when available
-predict_dat[,nis]=NA
+
+predict_dat[,nis]=NA #setting all nis to NA, so that RSR fills in values, for validation. Otherwise, uses real information when available
 source('RSR_protocols.R')
 
 R<-RSR(ec,sp,nis,fit_dat,predict_dat,protocolB)
