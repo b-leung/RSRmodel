@@ -80,7 +80,7 @@ RSR<-function(ec,sp,nis,fit_dat,predict_dat,do_protocolB)
 				tmp_dat[,sp]=cdm_rnd_pres[miss_inv,]
 				tmp_gam=predict.gam(cdm,type="response",newdata=tmp_dat)
 				#just in case it goes beyond bounds
-				tmp_gam[tmp_gam>p$n_sp]=p$n_sp
+				tmp_gam[tmp_gam>n_sp]=n_sp
 				tmp_gam[tmp_gam<0]=0
 				avg_miss[miss_inv]=avg_miss[miss_inv]+tmp_gam
 			}
@@ -132,7 +132,7 @@ RSR<-function(ec,sp,nis,fit_dat,predict_dat,do_protocolB)
 		#examine for "as if invader had never been introduced"
 		tmp_dat[,nis]=0
 		cf_rich=predict.gam(fit_nat_rich,type="response",newdata=tmp_dat)
-		cf_rich[cf_rich>(p$n_sp-1)]=p$n_sp-1
+		cf_rich[cf_rich>(n_sp-1)]=n_sp-1
 		cf_rich[cf_rich<0]=0
 		sum_cf=sum(cf_rich)
 		#step 4
