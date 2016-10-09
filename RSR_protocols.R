@@ -61,22 +61,17 @@ RSR<-function(ec,sp,nis,fit_dat,predict_dat,do_protocolB)
 		#RSR protocols depend on the following functions
 		monte_carlo<-function(miss,rich,pred,dat,nis_pos,full_dat,niter)
 		{
-			#returns prediction from bootstrap (cdm_rnd_pred) prediction from CDM gam (avg_miss), and native species richness given fitted invader (natr)
-			#these can be useful both for first and averaged values
 			cdm_rnd_pres=dat
-	
-			#only do for missing locations, otherwise use observed values
+			#find missing locations
 			miss_inv=miss[,nis_pos]
 			avg_miss=rep(0,sum(miss_inv))
-			#use this so that have all names consistent
 			tmp_dat=full_dat[miss_inv,]
 			for(i2 in 1:niter)			
 			{
-				#do random selection, so that using 0/1 values rather than probabilities 
 				#fill in 0/1 for all missing data based on probabilities. 
 				#Step 5
 				cdm_rnd_pres[miss]=choose_sp_loc(miss,rich,pred,dat)[miss]
-				#Step 6 - I think I just need to do this for the invader
+				#Step 6 
 				tmp_dat[,sp]=cdm_rnd_pres[miss_inv,]
 				tmp_gam=predict.gam(cdm,type="response",newdata=tmp_dat)
 				#just in case it goes beyond bounds
@@ -117,7 +112,6 @@ RSR<-function(ec,sp,nis,fit_dat,predict_dat,do_protocolB)
 		tmp_dat=predict_dat
 		for(i in 1:rnd_avg)
 		{
-			#only need to do rbinom here, since already have probability for each location, and just want to get 0/1
 			tmp_i=rbinom(nrow(pres_data),1,ret$pred_cdm)
 			tmp_dat[,nis]=tmp_i
 			tmp_gam=predict.gam(fit_nat_rich,type="response",newdata=tmp_dat)
@@ -129,7 +123,6 @@ RSR<-function(ec,sp,nis,fit_dat,predict_dat,do_protocolB)
 		sum_natr=sum(natr)
 
 		#step 3
-		#examine for "as if invader had never been introduced"
 		tmp_dat[,nis]=0
 		cf_rich=predict.gam(fit_nat_rich,type="response",newdata=tmp_dat)
 		cf_rich[cf_rich>(n_sp-1)]=n_sp-1
@@ -152,14 +145,12 @@ RSR<-function(ec,sp,nis,fit_dat,predict_dat,do_protocolB)
 }
 
 choose_sp_loc<-function(miss, rch,pred, dat)
-{#this can be used in place of rbinom
-	#figure out empty spots predicted
-	#should we base rch on poisson expectations?
+{	#figure out empty spots predicted
 	mx=ncol(miss)
 # Protocol A
 #Step 5a - second part
 	rch<-as.integer(rch)+rbinom(length(rch),1,rch-as.integer(rch))
-	#not sure is necessary, but make sure does not exceed total number possible
+	#but make sure does not exceed total number possible
 	rch[rch>mx]=mx
 #Step 5b
 	rch=rch-apply(dat, 1, function(x){return(sum(x,na.rm=TRUE))}) #sum all ones that are not NA
@@ -170,7 +161,7 @@ choose_sp_loc<-function(miss, rch,pred, dat)
 	for(i in 1:nrow(miss))
 	{
 		if(rch[i]>0 && sum(pred[i,miss[i,]])>0)
-		{	#there is a mismatch here - where model predicts 0 richness, and have a species present, not counted. Where model predicts presence, but is absent, will put in the invader. And this could be a probabilistic component with rbinom - i.e., if sum rch, get an answer reasonably close to true.
+		{	
 			if(sum(miss[i,])<=rch[i]) # everything known
 			{
 				fill[i,which(miss[i,])]=1
@@ -183,7 +174,7 @@ choose_sp_loc<-function(miss, rch,pred, dat)
 				pos=sample(which(miss[i,]),rch[i],replace=FALSE,pred[i,miss[i,]]) #these become present
 				fill[i,pos]=1 
 			}
-			#the others remain zero, then just replace the missing ones
+			#the others remain zero
 		}
 	}
 	return(fill)
